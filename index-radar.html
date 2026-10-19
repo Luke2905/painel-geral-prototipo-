@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Amino | Painel Executivo • Radar Panorâmico + Rodízio Inteligente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+  :root {
+    --navy:#05377c; --royal:#0c4da2; --sky:#0693e3;
+    --bg:#eef2f7; --card:#ffffff; --panel:#f5f8fc; --line:#e4eaf2; --track:#e6ecf4;
+    --ink:#0f1b2d; --muted:#66768e; --shadow:0 1px 2px rgba(15,27,45,.04),0 8px 24px -12px rgba(5,55,124,.14);
+    --good:#0f9d6b; --warn:#cf8208; --bad:#d4324a;
+    --good-bg:rgba(15,157,107,.11); --warn-bg:rgba(207,130,8,.12); --bad-bg:rgba(212,50,74,.10);
+    --accent:#0c4da2;
+  }
+  [data-theme="dark"] {
+    --bg:#08111f; --card:#0e1b30; --panel:#12233d; --line:#1b2d4a; --track:#1c2f4d;
+    --ink:#eaf0fa; --muted:#8ba0bf; --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 28px -14px rgba(0,0,0,.6);
+    --good:#2fd39b; --warn:#f0ad3a; --bad:#ff6b80;
+    --good-bg:rgba(47,211,155,.12); --warn-bg:rgba(240,173,58,.13); --bad-bg:rgba(255,107,128,.13);
+    --accent:#4db3f5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:16px}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+  .c-good{color:var(--good)} .c-warn{color:var(--warn)} .c-bad{color:var(--bad)} .c-accent{color:var(--accent)}
+
+  /* ---------- HEADER ---------- */
+  header.top{background:linear-gradient(100deg,#04295c 0%,var(--navy) 45%,var(--royal) 100%);color:#fff;padding:.6rem 1.4rem;display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:1rem}
+  .brand svg{height:1.75rem;width:auto;color:#fff;flex:none}
+  .brand .sep{width:1px;height:1.75rem;background:rgba(255,255,255,.25)}
+  .brand h1{font-size:1.05rem;font-weight:600;letter-spacing:-.01em;line-height:1.15}
+  .brand p{font-size:.76rem;color:rgba(255,255,255,.72);margin-top:.08rem}
+  .hdr-right{margin-left:auto;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+  .summary{display:flex;gap:.35rem}
+  .sum{display:inline-flex;align-items:center;gap:.38rem;background:rgba(255,255,255,.12);border-radius:99px;padding:.26rem .7rem;font-size:.8rem;font-weight:500}
+  .sum i{width:.55rem;height:.55rem;border-radius:50%;display:block}
+  .sum b{font-weight:700}
+  .ibtn{display:inline-flex;align-items:center;gap:.4rem;height:2.05rem;padding:0 .7rem;border-radius:.55rem;background:rgba(255,255,255,.12);font-size:.8rem;font-weight:500;color:#fff;transition:.15s}
+  .ibtn:hover{background:rgba(255,255,255,.22)} .ibtn svg{width:.95rem;height:.95rem} .ibtn.on{background:#fff;color:var(--navy);font-weight:600}
+  .clock{text-align:right;padding-left:.8rem;border-left:1px solid rgba(255,255,255,.22)}
+  .clock b{display:block;font-size:1.08rem;font-weight:600;line-height:1.1}
+  .clock span{font-size:.68rem;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.04em}
+
+  /* ---------- LAYOUT PRINCIPAL ---------- */
+  main{display:flex;flex-direction:column;gap:.75rem;padding:.75rem 1.4rem 1rem}
+  .surface{background:var(--card);border:1px solid var(--line);border-radius:1rem;box-shadow:var(--shadow);min-width:0;min-height:0}
+
+  /* ---------- FAIXA RADAR PANORÂMICA (10 SETORES SEMPRE VISÍVEIS) ---------- */
+  .radar-bar{padding:.45rem .6rem;display:flex;flex-direction:column;gap:.35rem}
+  .radar-top{display:flex;align-items:center;justify-content:space-between;padding:0 .35rem;font-size:.74rem;color:var(--muted)}
+  .radar-top strong{color:var(--ink);font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:.7rem;display:inline-flex;align-items:center;gap:.4rem}
+  .radar-top strong i{width:.45rem;height:.45rem;border-radius:50%;background:var(--sky);display:inline-block}
+  .radar-legend{display:flex;align-items:center;gap:.9rem}
+  .radar-legend span{display:inline-flex;align-items:center;gap:.3rem}
+  .radar-strip{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:.4rem}
+  .rchip{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:.2rem;padding:.42rem .58rem;border-radius:.7rem;background:var(--panel);border:1px solid transparent;cursor:pointer;transition:all .2s;min-width:0;overflow:hidden;user-select:none}
+  .rchip:hover{border-color:var(--sky);transform:translateY(-1px)}
+  .rchip.active{background:var(--card);border-color:rgba(6,147,227,.45);box-shadow:0 2px 8px -2px rgba(5,55,124,.12)}
+  .rchip.active::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,var(--navy),var(--sky))}
+  .rchip.queued{opacity:.78}
+  .rchip-h{display:flex;align-items:center;gap:.35rem;min-width:0}
+  .sdot{width:.55rem;height:.55rem;border-radius:50%;flex:none}
+  .sdot.ok{background:var(--good)} .sdot.warn{background:var(--warn)} .sdot.bad{background:var(--bad);animation:pulse 2s infinite}
+  .rchip-name{font-size:.76rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+  .rchip-tag{font-size:.62rem;font-weight:600;padding:.05rem .32rem;border-radius:4px;background:rgba(6,147,227,.12);color:var(--accent);flex:none;line-height:1.2}
+  .rchip.pinned .rchip-tag{background:var(--navy);color:#fff}
+  [data-theme="dark"] .rchip.pinned .rchip-tag{background:var(--sky);color:#061224}
+  .rchip-b{display:flex;align-items:baseline;justify-content:space-between;gap:.3rem;min-width:0}
+  .rchip-val{font-size:.95rem;font-weight:700;line-height:1.1;white-space:nowrap}
+  .rchip-lbl{font-size:.68rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(212,50,74,.5)}70%{box-shadow:0 0 0 .45rem rgba(212,50,74,0)}100%{box-shadow:0 0 0 0 rgba(212,50,74,0)}}
+
+  /* ---------- GRADE DE 6 CARDS EM DESTAQUE (3x2) ---------- */
+  .feat{display:grid;gap:.8rem;grid-template-columns:1fr;min-height:0;flex:1}
+  .card{position:relative;padding:.9rem 1.15rem .95rem;display:flex;flex-direction:column;gap:.7rem;overflow:hidden;transition:border-color .25s,box-shadow .25s}
+  .card.swapping{animation:swapIn .42s cubic-bezier(.16,1,.3,1) both}
+  @keyframes swapIn{from{opacity:0;transform:translateY(.35rem) scale(.99)}to{opacity:1;transform:none}}
+  .card:hover{border-color:rgba(6,147,227,.45)}
+
+  /* Barra de progresso sutil no topo dos cards em rodízio */
+  .slot-bar{position:absolute;top:0;left:0;right:0;height:2.5px;background:transparent;overflow:hidden}
+  .slot-bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--sky),var(--royal));transition:width .25s linear}
+
+  .card-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem}
+  .title{display:flex;align-items:center;gap:.6rem;min-width:0}
+  .ico{width:2.05rem;height:2.05rem;border-radius:.6rem;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--navy),var(--sky));flex:none}
+  .ico svg{width:1.05rem;height:1.05rem}
+  .title-txt{min-width:0}
+  .title h2{font-size:.98rem;font-weight:650;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:.4rem}
+  .title small{display:block;font-size:.73rem;color:var(--muted);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .head-r{display:flex;align-items:center;gap:.35rem;flex:none}
+
+  .slot-pill{display:inline-flex;align-items:center;gap:.25rem;font-size:.68rem;font-weight:600;padding:.15rem .45rem;border-radius:99px;background:var(--panel);color:var(--muted);border:1px solid var(--line);transition:.15s}
+  .slot-pill:hover{border-color:var(--sky);color:var(--ink)}
+  .slot-pill svg{width:.7rem;height:.7rem}
+  .slot-pill.fixed{background:rgba(5,55,124,.08);color:var(--accent);border-color:rgba(6,147,227,.25)}
+  [data-theme="dark"] .slot-pill.fixed{background:rgba(77,179,245,.12)}
+
+  .more{display:inline-flex;align-items:center;gap:.15rem;font-size:.78rem;font-weight:600;color:var(--accent);padding:.24rem .5rem;border-radius:.5rem}
+  .more:hover{background:var(--panel)} .more svg{width:.9rem;height:.9rem}
+
+  .metrics{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));row-gap:.6rem}
+  .m{padding:0 .75rem;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:.18rem;min-width:0}
+  .m.first{padding-left:0;border-left:0}
+  .lbl{font-size:.76rem;font-weight:500;color:var(--muted);display:flex;align-items:center;gap:.32rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .val{font-size:var(--vs,1.65rem);font-weight:650;line-height:1.05;white-space:nowrap}
+  .val small{font-size:.72em;font-weight:500;color:var(--muted);margin-left:.18rem;letter-spacing:0}
+  .sub{font-size:.74rem;color:var(--muted);display:flex;align-items:center;gap:.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pill{display:inline-flex;align-items:center;font-size:.7rem;font-weight:600;padding:.08rem .42rem;border-radius:99px;white-space:nowrap}
+  .pill.good{background:var(--good-bg);color:var(--good)} .pill.warn{background:var(--warn-bg);color:var(--warn)}
+  .pill.bad{background:var(--bad-bg);color:var(--bad)} .pill.neutral{background:var(--panel);color:var(--muted)}
+  .dot{width:.45rem;height:.45rem;border-radius:50%;flex:none} .dot.bad{background:var(--bad)} .dot.warn{background:var(--warn)}
+
+  .panels{display:grid;gap:.65rem;flex:1;min-height:0;margin-top:auto}
+  .panels.two{grid-template-columns:1fr 1fr}
+  .panel{background:var(--panel);border-radius:.75rem;padding:.65rem .85rem;display:flex;flex-direction:column;gap:.45rem;min-width:0;justify-content:center}
+  .panel-t{font-size:.76rem;font-weight:600;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:.4rem;white-space:nowrap}
+  .panel-t b{color:var(--ink);white-space:nowrap}
+  .track{height:.48rem;border-radius:99px;background:var(--track);position:relative}
+  .fill{height:100%;border-radius:99px;background:var(--royal)}
+  [data-theme="dark"] .fill{background:var(--sky)}
+  .fill.good{background:var(--good)!important} .fill.warn{background:var(--warn)!important} .fill.bad{background:var(--bad)!important}
+  .mark{position:absolute;top:-.2rem;bottom:-.2rem;width:2px;background:var(--ink);border-radius:2px}
+  .stack{display:flex;height:.48rem;border-radius:99px;overflow:hidden;gap:2px}
+  .stack i{display:block;height:100%}
+  .legend{display:grid;grid-template-columns:1fr 1fr;gap:.2rem .75rem;font-size:.74rem;color:var(--muted)}
+  .legend.one{grid-template-columns:1fr}
+  .legend span{display:flex;align-items:center;gap:.35rem;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .legend b{margin-left:auto;color:var(--ink);font-weight:600;white-space:nowrap}
+  .legend i{width:.5rem;height:.5rem;border-radius:2px;flex:none}
+  .bars{display:grid;grid-template-columns:repeat(6,1fr);gap:.35rem;align-items:end;flex:1;min-height:3.2rem}
+  .bar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:.12rem}
+  .bar i{display:block;width:100%;max-width:1.8rem;border-radius:.28rem .28rem .1rem .1rem;background:rgba(12,77,162,.35)}
+  .bar.cur i{background:linear-gradient(180deg,var(--sky),var(--navy))}
+  .bar span,.bar u{font-size:.66rem;color:var(--muted);text-decoration:none;font-weight:500} .bar.cur span,.bar.cur u{color:var(--ink);font-weight:600}
+
+  /* Rodapé do slot rotativo mostrando qual área vem a seguir */
+  .next-hint{display:flex;align-items:center;justify-content:space-between;font-size:.7rem;color:var(--muted);padding-top:.1rem;border-top:1px dashed var(--line)}
+  .next-hint span{display:inline-flex;align-items:center;gap:.35rem}
+  .next-hint b{color:var(--ink);font-weight:600}
+
+  /* ---------- DRAWER ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(4,16,38,.5);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:.25s;z-index:50}
+  .scrim.open{opacity:1;pointer-events:auto}
+  aside{position:absolute;top:0;right:0;bottom:0;width:min(40rem,100%);background:var(--card);box-shadow:-20px 0 50px -20px rgba(0,0,0,.4);transform:translateX(100%);transition:transform .3s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column}
+  .scrim.open aside{transform:none}
+  .dhead{padding:1.3rem 1.6rem;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start}
+  .dhead small{font-size:.78rem;font-weight:600;color:var(--accent);letter-spacing:.07em;text-transform:uppercase}
+  .dhead h3{font-size:1.3rem;font-weight:650;margin-top:.2rem;letter-spacing:-.02em}
+  .x{width:2.2rem;height:2.2rem;border-radius:.6rem;display:grid;place-items:center;color:var(--muted)} .x:hover{background:var(--panel)}
+  .dbody{padding:1.4rem 1.6rem;overflow:auto;flex:1;display:flex;flex-direction:column;gap:1.7rem}
+  .dbody h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-bottom:.6rem}
+  table{width:100%;border-collapse:collapse;font-size:.95rem}
+  th{font-weight:500;color:var(--muted);text-align:right;padding:.55rem 0;border-bottom:1px solid var(--line);font-size:.85rem}
+  td{padding:.75rem 0;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+  th:first-child,td:first-child{text-align:left} td:first-child{font-weight:500}
+  .dfoot{padding:1rem 1.6rem;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted);display:flex;justify-content:space-between}
+
+  /* ---------- TV / DESKTOP: tudo visível, zero scroll ---------- */
+  @media (min-width:1150px){
+    html{font-size:clamp(11.5px,min(.88vw,1.55vh),32px)}
+    html,body{height:100vh;overflow:hidden}
+    body{display:flex;flex-direction:column}
+    main{flex:1;min-height:0}
+    .feat{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+  }
+  /* ---------- Tablet / telas menores ---------- */
+  @media (max-width:1149px){
+    .radar-strip{grid-template-columns:repeat(5,minmax(0,1fr))}
+    .feat{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:720px){
+    .hdr-right{margin-left:0;width:100%} .clock{display:none}
+    .radar-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .feat{grid-template-columns:1fr}
+    .metrics{--cols:2!important} .m{border-left:0;padding:0}
+    .panels.two{grid-template-columns:1fr}
+  }
+</style>
+</head>
+
+<body>
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 37.9 24" fill="currentColor" aria-label="Amino">
+      <polygon points="4.2 10.3 5.9 10.3 5.1 7.6 4.2 10.3"/>
+      <rect width="37.7" height="1.8"/><rect y="17" width="37.7" height="1.8"/>
+      <path d="m37.7,2.9H0v12.9h37.7V2.9ZM6.8,13.2l-.4-1.3h-2.7l-.3,1.2H1.2l2.7-7.4h2.4l2.7,7.5h-2.2Zm10.3,0h-1.7v-5.8l-1.3,5.7h-1.5l-1.3-5.7v5.7h-1.7v-7.4h2.7l1,4.6,1-4.6h2.7v7.5h.1Zm3.3,0h-2.1v-7.5h2.1v7.5Zm7.6,0h-1.7l-2.7-4.3v4.3h-1.8v-7.5h1.8l2.8,4.2v-4.2h1.7v7.5h-.1Zm4.8,0c-2,0-3.7-1.7-3.7-3.8s1.7-3.8,3.7-3.8,3.7,1.7,3.7,3.8c0,2.1-1.6,3.8-3.7,3.8Z"/>
+      <path d="m32.8,7.3c-1.1,0-2.1.9-2.1,2.1s.9,2.1,2.1,2.1c1.1,0,2.1-.9,2.1-2.1s-.9-2.1-2.1-2.1Z"/>
+    </svg>
+    <span class="sep"></span>
+    <div><h1>Painel Executivo</h1><p>Visão consolidada • Outubro 2026 (MTD)</p></div>
+  </div>
+  <div class="hdr-right">
+    <div class="summary" id="summary"></div>
+    <button class="ibtn on" id="tvBtn" title="Pausar ou retomar a alternância automática de cards">
+      <i data-lucide="refresh-cw"></i><span id="tvLbl">Rodízio automático: Ativo</span>
+    </button>
+    <button class="ibtn" id="stepBtn" title="Alternar turno de cards agora">
+      <i data-lucide="skip-forward"></i><span>Alternar agora</span>
+    </button>
+    <button class="ibtn" id="themeBtn" title="Tema claro/escuro"><i data-lucide="sun-moon"></i></button>
+    <button class="ibtn" id="fsBtn" title="Tela cheia"><i data-lucide="maximize-2"></i></button>
+    <div class="clock"><b id="clk">--:--</b><span id="dt"></span></div>
+  </div>
+</header>
+
+<main>
+  <!-- FAIXA RADAR HORIZONTAL: todas as 10 áreas visíveis simultaneamente -->
+  <section class="surface radar-bar">
+    <div class="radar-top">
+      <strong><i></i>Radar Geral • 10 Setores Monitorados</strong>
+      <div class="radar-legend">
+        <span><b style="color:var(--ink)">6 áreas abertas</b> simultaneamente na grade</span>
+        <span>•</span>
+        <span id="cycleStatus">Troca suave em pares a cada 7s (passe o mouse em um card para manter)</span>
+      </div>
+    </div>
+    <div class="radar-strip" id="radar"></div>
+  </section>
+
+  <!-- GRADE PRINCIPAL 3x2: 6 áreas detalhadas sempre visíveis -->
+  <section class="feat" id="feat"></section>
+</main>
+
+<div class="scrim" id="scrim">
+  <aside>
+    <div class="dhead"><div><small id="dTag"></small><h3 id="dTitle"></h3></div><button class="x" id="dClose"><i data-lucide="x"></i></button></div>
+    <div class="dbody" id="dBody"></div>
+    <div class="dfoot"><span>Dados fictícios • base para validação</span><span>ESC para fechar</span></div>
+  </aside>
+</div>
+
+<script>
+  const $ = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+  const u = t => `<small>${t}</small>`;
+  const ST = { bad:'Crítico', warn:'Atenção', ok:'Em meta' };
+
+  /* ================= MODELO DE DADOS (10 SETORES) ================= */
+  const S = [
+   { id:'vendas', name:'Vendas', short:'Vendas', sub:'Faturamento, margem e carteira', icon:'trending-up', status:'warn',
+     main:{l:'Fat. líquido', v:'R$ 19,8M', d:'96% meta', t:'warn'},
+     cols:4, vs:'1.45rem',
+     kpis:[
+       {l:'Fat. total', v:'R$ 24,6M', s:'vs. ant.', pill:['good','▲ 8,2%']},
+       {l:'Fat. líquido', v:'R$ 19,8M', s:'80,5% bruto', t:'accent'},
+       {l:'Margem', v:'31,8%', s:'vs. meta', pill:['good','+1,8 p.p.']},
+       {l:'Em atraso', v:'18', u:'peds', dot:'bad', t:'bad', s:'R$ 1,14M'} ],
+     panels:[
+       {t:'stack', title:'Nacional × Exportação', one:true, items:[{n:'Nacional • R$ 16,7M',v:'68%',p:68,c:'var(--navy)'},{n:'Exportação • R$ 7,9M',v:'32%',p:32,c:'var(--sky)'}]},
+       {t:'bars', title:'Pedidos/mês', right:'Out • 412', items:[['Mai',340,56],['Jun',365,68],['Jul',350,61],['Ago',388,80],['Set',395,86],['Out',412,100]]} ],
+     detail:{ title:'Faturamento, margem e carteira em atraso', secs:[
+       ['Desempenho por linha de produto',['Linha','Bruto','Líquido','Margem'],[['Sistemas PU','R$ 13,40M','R$ 10,78M','<span class=c-good>30,4%</span>'],['Aditivos','R$ 6,85M','R$ 5,52M','<span class=c-good>35,2%</span>'],['CASE / Amithane','R$ 4,35M','R$ 3,50M','<span class=c-good>30,8%</span>']]],
+       ['Maiores pedidos em atraso',['Pedido','Mercado','Gargalo','Valor'],[['#EXP-2219 • Andes Corp','Export','<span class=c-warn>Booking navio</span>','R$ 425k'],['#PED-9841 • TermoFrio','Nacional','<span class=c-bad>Retido no CQ</span>','R$ 310k'],['#PED-9870 • Mineração Sul','Nacional','<span class=c-bad>Fila reator</span>','R$ 195k']]] ]} },
+
+   { id:'producao', name:'Produção', short:'Produção', sub:'Eficiência, volume e custos', icon:'factory', status:'bad',
+     main:{l:'OEE industrial', v:'81,4%', d:'meta 85%', t:'warn'},
+     cols:4, vs:'1.45rem',
+     kpis:[
+       {l:'OEE global', v:'81,4%', t:'accent', s:'meta 85%', pill:['warn','-3,6 p.p.']},
+       {l:"OP's prod.", v:'482,5', u:'t', s:'318 OPs • 27 antec.'},
+       {l:'Hora extra', v:'1.420', u:'h', dot:'warn', s:'R$ 68,4k', pill:['warn','+12%']},
+       {l:'Retrabalhos', v:'11,6', u:'t', dot:'bad', t:'bad', s:'meta ≤ 1,8%', pill:['bad','2,4%']} ],
+     panels:[
+       {t:'progress', title:'Plano mensal de produção', right:'482,5 / 520 t (92,8%)', pct:92.8, mark:100, legend:[['Disponib. 88,5% • Perf. 94,2%','Qualid. 97,6%'],['Pedidos antecipados','27 peds (8,5%)']]} ],
+     detail:{ title:'OEE, volume e retrabalho', secs:[
+       ['Desempenho por área',['Área','OEE','Volume','Hora extra'],[['Sistemas PU','<span class=c-good>86,2%</span>','245.000 kg','680 h'],['Aditivos','81,0%','142.500 kg','410 h'],['CASE / Envase','<span class=c-warn>74,8%</span>','95.000 kg','330 h']]],
+       ['Causas de retrabalho',['Causa','Lotes','Peso'],[['Viscosidade / reatividade','6','5.400 kg'],['Umidade fora de spec','5','3.800 kg'],['Avaria de embalagem','3','2.380 kg']]] ]} },
+
+   { id:'logistica', name:'Logística', short:'Logística', sub:'Expedição e nível de serviço', icon:'truck', status:'warn',
+     main:{l:'OTIF entregas', v:'91,2%', d:'34 atras.', t:'warn'},
+     cols:3, vs:'1.55rem',
+     kpis:[
+       {l:'Total de pedidos', v:'386', s:'352 no prazo'},
+       {l:'Entregas atrasadas', v:'34', dot:'warn', t:'bad', s:'OTIF 91,2%', pill:['warn','meta 95%']},
+       {l:'Custo de frete', v:'R$ 842k', s:'4,25% do líquido'} ],
+     panels:[ {t:'stack', title:'Causas dos atrasos (34 entregas)', items:[{n:'Transportadora',v:'15',p:44,c:'var(--navy)'},{n:'Retenção fiscal',v:'8',p:24,c:'var(--royal)'},{n:'Produção / CQ',v:'7',p:20,c:'var(--sky)'},{n:'Janela cliente',v:'4',p:12,c:'#8fb4dd'}]} ],
+     detail:{ title:'OTIF e custo de frete', secs:[
+       ['Causas das 34 entregas atrasadas',['Causa','Pedidos','Share'],[['Atraso de transportadora','15','44%'],['Retenção fiscal interestadual','8','24%'],['Liberação tardia Produção / CQ','7','20%'],['Janela de recebimento','4','12%']]],
+       ['Composição do frete',['Modal','Valor'],[['Carga dedicada','R$ 510k'],['Fracionado','R$ 192k'],['Exportação / porto','R$ 95k'],['Emergencial','<span class=c-bad>R$ 45k</span>']]] ]} },
+
+   { id:'cq', name:'Controle da Qualidade', short:'Qualidade (CQ)', sub:'Liberação laboratorial e SLA', icon:'flask-conical', status:'bad',
+     main:{l:"OP's > 4h SLA", v:'11 OPs', d:'SLA crítico', t:'bad'},
+     cols:3, vs:'1.55rem',
+     kpis:[
+       {l:"OP's analisadas", v:'304', s:'96,7% aprov. 1ª vez'},
+       {l:"OP's em atraso", v:'11', dot:'bad', t:'bad', s:'SLA > 4h'},
+       {l:'PA entregue atrasado', v:'19', dot:'warn', t:'warn', s:'p/ análise'} ],
+     panels:[ {t:'progress', title:'Tempo médio de liberação', right:'2h45 / meta 3h', pct:86, mark:100, tone:'good', legend:[['Em bancada','14 lotes'],['Atraso 3º turno','11 de 19']]} ],
+     detail:{ title:'SLA laboratorial e amostras de PA', secs:[
+       ["OP's com análise em atraso",['OP','Ensaio','Tempo'],[['#44910 • Poliol rígido','Reatividade','<span class=c-bad>7h 20m</span>'],['#44918 • Pré-polímero','NCO livre','<span class=c-bad>6h 05m</span>'],['#44925 • Catalisador','Karl Fischer','<span class=c-bad>4h 50m</span>']]],
+       ['PA entregue em atraso para análise',['Turno','Lotes'],[['1º turno','3'],['2º turno','5'],['3º turno','<span class=c-warn>11</span>']]] ]} },
+
+   { id:'manut', name:'Manutenção & CAPEX', short:'Manut. & CAPEX', sub:'Orçamento e investimentos', icon:'wrench', status:'warn',
+     main:{l:'Manut. vs prev.', v:'+6,4%', d:'R$ 332k', t:'bad'},
+     cols:3, vs:'1.55rem',
+     kpis:[
+       {l:'Manutenção mês', v:'R$ 332k', dot:'bad', s:'prev. R$ 312k', pill:['bad','+6,4%']},
+       {l:'CAPEX mês', v:'R$ 485k', t:'accent', s:'orç. R$ 500k'},
+       {l:'CAPEX ano', v:'R$ 4,12M', s:'82,4% do budget'} ],
+     panels:[ {t:'progress', title:'Execução do CAPEX 2026', right:'R$ 4,12M / 5,00M', pct:82.4, mark:83.3, legend:[['Preventiva','74%'],['Corretiva','26%']]} ],
+     detail:{ title:'Orçamento e projetos de investimento', secs:[
+       ['Manutenção: desvio vs. previsto',['Item','Impacto'],[['Selo mecânico reator 04','<span class=c-bad>+R$ 28,5k</span>'],['Economia em preventivas','<span class=c-good>-R$ 8,5k</span>'],['Desvio líquido','<span class=c-bad>+R$ 20,0k</span>']]],
+       ['Projetos CAPEX 2026',['Projeto','Budget','Realizado','Avanço'],[['Automação dosagem/envase','R$ 2,00M','R$ 1,85M','95%'],['Expansão tancagem','R$ 1,45M','R$ 1,42M','100%'],['Modernização P&D / lab.','R$ 1,55M','R$ 0,85M','78%']]] ]} },
+
+   { id:'supr', name:'Suprimentos', short:'Suprimentos', sub:'Compras e abastecimento MP', icon:'package', status:'warn',
+     main:{l:'Itens críticos', v:'7 faltas', d:'saving 1,3M', t:'bad'},
+     cols:3, vs:'1.55rem',
+     kpis:[
+       {l:'Saving acumulado', v:'R$ 1,3M', t:'good', s:'meta R$ 1,5M'},
+       {l:'Itens críticos s/ cob.', v:'7', dot:'bad', t:'bad', s:'de 148 monitorados'},
+       {l:'OCs em atraso', v:'23', dot:'warn', t:'warn', s:'fornecedores'} ],
+     panels:[ {t:'progress', title:'Fill rate dos fornecedores', right:'94% / meta 95%', pct:94, mark:95, tone:'warn', legend:[['Isocianato MDI','Cob. 2 dias'],['Poliol base','Cob. 3 dias']]} ],
+     detail:{ title:'Abastecimento de matérias-primas', secs:[
+       ['Itens críticos em falta',['Item','Cobertura','Previsão'],[['Isocianato MDI','<span class=c-bad>2 dias</span>','22/10'],['Poliol base','<span class=c-bad>3 dias</span>','23/10'],['Catalisador amina','<span class=c-warn>5 dias</span>','25/10']]] ]} },
+
+   { id:'pcp', name:'PCP & Estoque', short:'PCP & Estoque', sub:'Programação e cobertura', icon:'warehouse', status:'ok',
+     main:{l:'Cob. estoque', v:'38 dias', d:'meta 35–45', t:'good'},
+     cols:3, vs:'1.55rem',
+     kpis:[
+       {l:'Cobertura estoque', v:'38', u:'dias', t:'good', s:'meta 35–45 d'},
+       {l:'Acuracidade', v:'98,6%', s:'meta ≥ 98%'},
+       {l:'Aderência prog.', v:'93%', s:'meta 95%', pill:['warn','-2 p.p.']} ],
+     panels:[ {t:'stack', title:'Composição do estoque (R$ 27,4M)', items:[{n:'Matéria-prima',v:'52%',p:52,c:'var(--navy)'},{n:'Intermediário',v:'14%',p:14,c:'var(--sky)'},{n:'Produto acabado',v:'34%',p:34,c:'#8fb4dd'}]} ],
+     detail:{ title:'Estoque e programação', secs:[
+       ['Posição por tipo',['Tipo','Valor','Cobertura'],[['Matéria-prima','R$ 14,2M','41 dias'],['Intermediário','R$ 3,9M','9 dias'],['Produto acabado','R$ 9,3M','27 dias']]] ]} },
+
+   { id:'ssma', name:'SSMA', short:'SSMA', sub:'Segurança, saúde e ambiente', icon:'shield-check', status:'ok',
+     main:{l:'Sem acidentes', v:'128 dias', d:'rec. 211d', t:'good'},
+     cols:3, vs:'1.55rem',
+     kpis:[
+       {l:'Dias s/ acidente', v:'128', t:'good', s:'recorde 211 dias'},
+       {l:'Quase-acidentes', v:'14', s:'tratados no mês'},
+       {l:'Treinamentos', v:'97%', s:'meta 95%', pill:['good','▲ em dia']} ],
+     panels:[ {t:'progress', title:'Inspeções preventivas realizadas', right:'92% concluídas', pct:92, tone:'good', legend:[['Afastamentos no mês','0 ocorrências'],['Ações corretivas','94% no prazo']]} ],
+     detail:{ title:'Indicadores de segurança', secs:[
+       ['Ocorrências do mês',['Tipo','Qtd'],[['Acidente com afastamento','0'],['Acidente sem afastamento','1'],['Quase-acidentes','14']]] ]} },
+
+   { id:'fin', name:'Financeiro', short:'Financeiro', sub:'Caixa, recebimento e inadimplência', icon:'landmark', status:'ok',
+     main:{l:'Saldo de caixa', v:'R$ 38,2M', d:'47d cob.', t:'good'},
+     cols:3, vs:'1.55rem',
+     kpis:[
+       {l:'Saldo de caixa', v:'R$ 38,2M', t:'accent', s:'47 dias cobertura'},
+       {l:'Inadimplência', v:'2,1%', t:'good', s:'meta ≤ 3,0%'},
+       {l:'PMR (recebimento)', v:'42', u:'dias', s:'meta 40 d', pill:['warn','+2 d']} ],
+     panels:[ {t:'progress', title:'Fluxo de caixa: realizado vs. projetado', right:'104% da meta', pct:100, mark:96, tone:'good', legend:[['A receber (30d)','R$ 21,4M'],['A pagar (30d)','R$ 17,9M']]} ],
+     detail:{ title:'Posição financeira', secs:[
+       ['Vencimentos próximos 30 dias',['Item','Valor'],[['Contas a receber','R$ 21,4M'],['Contas a pagar','R$ 17,9M'],['Saldo projetado','<span class=c-good>+R$ 3,5M</span>']]] ]} },
+
+   { id:'rh', name:'Recursos Humanos', short:'RH & Clima', sub:'Quadro, turnover e absenteísmo', icon:'users', status:'warn',
+     main:{l:'Absenteísmo', v:'3,4%', d:'meta ≤ 3%', t:'warn'},
+     cols:3, vs:'1.55rem',
+     kpis:[
+       {l:'Absenteísmo', v:'3,4%', t:'warn', dot:'warn', s:'meta ≤ 3,0%'},
+       {l:'Turnover mensal', v:'1,8%', s:'dentro do teto'},
+       {l:'Vagas em aberto', v:'6', s:'SLA médio 28 dias' } ],
+     panels:[ {t:'progress', title:'Headcount ativo vs. quadro aprovado', right:'412 / 418 colab. (98,6%)', pct:98.6, legend:[['Absenteísmo Produção','4,1% (atenção)'],['Absenteísmo Adm/Log','2,4% (ok)']]} ],
+     detail:{ title:'Quadro e absenteísmo', secs:[
+       ['Absenteísmo por área',['Área','Taxa'],[['Produção','<span class=c-warn>4,1%</span>'],['Logística','3,2%'],['Administrativo','1,9%']]] ]} }
+  ];
+  const byId = Object.fromEntries(S.map(s => [s.id, s]));
+
+  /* ================= ARQUITETURA DE 6 SLOTS (3x2) =================
+     - 6 cards ficam SEMPRE abertos na tela (60% da empresa detalhada a cada instante)
+     - Os 10 setores ficam SEMPRE visíveis na faixa Radar superior
+     - Slots 0 e 1 são Pilares Fixos por padrão (Vendas e Produção)
+     - Slots 2, 3, 4 e 5 alternam entre duplas complementares sem nenhum card pular de lugar!
+     - A troca ocorre em onda suave (2 cards a cada 7s), mantendo a leitura confortável. */
+  const SLOTS = [
+    { idx:0, mode:'fixed', pair:['vendas'], active:0, progress:0 },
+    { idx:1, mode:'fixed', pair:['producao'], active:0, progress:0 },
+    { idx:2, mode:'rot', group:0, pair:['logistica', 'pcp'], active:0, progress:0 },
+    { idx:3, mode:'rot', group:0, pair:['cq', 'ssma'], active:0, progress:0 },
+    { idx:4, mode:'rot', group:1, pair:['manut', 'fin'], active:0, progress:0 },
+    { idx:5, mode:'rot', group:1, pair:['supr', 'rh'], active:0, progress:0 }
+  ];
+
+  const state = {
+    auto: true,
+    hoveredSlot: -1,
+    drawerOpen: false,
+    waveGroup: 0,      // alterna grupo 0 (slots 2,3) e grupo 1 (slots 4,5)
+    tickCount: 0,
+    ticksPerSwap: 28   // 28 * 250ms = 7 segundos por onda (14s por ciclo completo)
+  };
+
+  const currentIds = () => SLOTS.map(sl => sl.pair[sl.active]);
+  const colorOf = t => t ? 'c-' + t : '';
+
+  /* ================= RENDERIZAÇÃO ================= */
+  function kpiHTML(k, i, cols){
+    return `<div class="m ${i % cols === 0 ? 'first' : ''}">
+      <div class="lbl">${k.dot ? `<span class="dot ${k.dot}"></span>` : ''}${k.l}</div>
+      <div class="val num ${colorOf(k.t)}">${k.v}${k.u ? u(k.u) : ''}</div>
+      <div class="sub">${k.pill ? `<span class="pill ${k.pill[0]}">${k.pill[1]}</span>` : ''}${k.s || ''}</div></div>`;
+  }
+
+  function panelHTML(p){
+    if (p.t === 'progress') return `<div class="panel"><div class="panel-t">${p.title}<b class="num">${p.right}</b></div>
+      <div class="track"><div class="fill ${p.tone || ''}" style="width:${p.pct}%"></div>${p.mark ? `<span class="mark" style="left:${p.mark}%"></span>` : ''}</div>
+      ${p.legend ? `<div class="legend">${p.legend.map(l => `<span>${l[0]}<b>${l[1]}</b></span>`).join('')}</div>` : ''}</div>`;
+    if (p.t === 'stack') return `<div class="panel"><div class="panel-t">${p.title}</div>
+      <div class="stack">${p.items.map(i => `<i style="width:${i.p}%;background:${i.c}"></i>`).join('')}</div>
+      <div class="legend ${p.one ? 'one' : ''}">${p.items.map(i => `<span><i style="background:${i.c}"></i>${i.n}<b>${i.v}</b></span>`).join('')}</div></div>`;
+    if (p.t === 'bars') return `<div class="panel"><div class="panel-t">${p.title}<b class="num c-accent">${p.right}</b></div>
+      <div class="bars">${p.items.map((b, i) => `<div class="bar ${i === p.items.length - 1 ? 'cur' : ''}"><u>${b[1]}</u><i style="height:${b[2]}%"></i><span>${b[0]}</span></div>`).join('')}</div></div>`;
+    return '';
+  }
+
+  function slotCardHTML(sl, animate=false){
+    const id = sl.pair[sl.active];
+    const s = byId[id];
+    const cols = s.cols || Math.min(s.kpis.length, 4);
+    const isRot = sl.mode === 'rot' && sl.pair.length > 1;
+    const nextSector = isRot ? byId[sl.pair[(sl.active + 1) % sl.pair.length]] : null;
+
+    return `<article class="surface card ${animate ? 'swapping' : ''}" data-slot="${sl.idx}" style="--vs:${s.vs || '1.55rem'}">
+      ${isRot ? `<div class="slot-bar"><i id="sbar-${sl.idx}" style="width:${sl.progress}%"></i></div>` : ''}
+      <div class="card-head">
+        <div class="title">
+          <div class="ico"><i data-lucide="${s.icon}"></i></div>
+          <div class="title-txt">
+            <h2>${s.name}</h2>
+            <small>${s.sub}</small>
+          </div>
+        </div>
+        <div class="head-r">
+          ${isRot
+            ? `<button class="slot-pill" data-flip="${sl.idx}" title="Clique para alternar agora com ${nextSector.short}">
+                 <i data-lucide="repeat"></i><span>${sl.active + 1}/${sl.pair.length}</span>
+               </button>`
+            : `<span class="slot-pill fixed" title="Pilar fixo na tela"><i data-lucide="pin"></i><span>Fixo</span></span>`
+          }
+          <span class="pill ${s.status === 'ok' ? 'good' : s.status}">${ST[s.status]}</span>
+          <button class="more" data-d="${s.id}">Detalhar <i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="metrics" style="--cols:${cols}">${s.kpis.map((k, i) => kpiHTML(k, i, cols)).join('')}</div>
+      <div class="panels ${s.panels.length > 1 ? 'two' : ''}">${s.panels.map(p => panelHTML(p)).join('')}</div>
+      ${isRot ? `<div class="next-hint">
+        <span><span class="sdot ${nextSector.status}"></span>Próximo neste card: <b>${nextSector.short}</b> (${nextSector.main.l}: ${nextSector.main.v})</span>
+        <button data-lock="${sl.idx}" style="color:var(--accent);font-weight:600" title="Fixar ou destravar este card">${sl.locked ? 'Destravar rodízio' : 'Fixar card'}</button>
+      </div>` : ''}
+    </article>`;
+  }
+
+  function renderRadar(){
+    const openIds = currentIds();
+    const fixedIds = SLOTS.filter(sl => sl.mode === 'fixed' || sl.locked).map(sl => sl.pair[sl.active]);
+
+    $('#radar').innerHTML = S.map(s => {
+      const isOpen = openIds.includes(s.id);
+      const isPinned = fixedIds.includes(s.id);
+      const tag = isPinned ? 'FIXO' : (isOpen ? 'NA TELA' : 'FILA');
+      return `<div class="rchip ${isOpen ? 'active' : 'queued'} ${isPinned ? 'pinned' : ''}" data-rjump="${s.id}" title="${isOpen ? 'Visível nos cards abaixo (clique para detalhar)' : 'Clique para exibir imediatamente no card correspondente'}">
+        <div class="rchip-h">
+          <span class="sdot ${s.status}"></span>
+          <span class="rchip-name">${s.short}</span>
+          <span class="rchip-tag">${tag}</span>
+        </div>
+        <div class="rchip-b">
+          <span class="rchip-val num ${colorOf(s.main.t)}">${s.main.v}</span>
+          <span class="rchip-lbl">${s.main.d}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    const c = k => S.filter(s => s.status === k).length;
+    $('#summary').innerHTML = [['bad','var(--bad)','críticos'],['warn','var(--warn)','atenção'],['ok','var(--good)','em meta']]
+      .map(([k, col, t]) => `<span class="sum"><i style="background:${col}"></i><b>${c(k)}</b><span>${t}</span></span>`).join('');
+  }
+
+  function renderAll(){
+    $('#feat').innerHTML = SLOTS.map(sl => slotCardHTML(sl, false)).join('');
+    renderRadar();
+    bindHoverEvents();
+    lucide.createIcons();
+  }
+
+  function updateSingleSlot(slotIdx){
+    const sl = SLOTS[slotIdx];
+    const el = $(`[data-slot="${slotIdx}"]`);
+    if (!el) return renderAll();
+    el.outerHTML = slotCardHTML(sl, true);
+    renderRadar();
+    bindHoverEvents();
+    lucide.createIcons();
+  }
+
+  function bindHoverEvents(){
+    $$('[data-slot]').forEach(el => {
+      const idx = Number(el.dataset.slot);
+      el.onmouseenter = () => { state.hoveredSlot = idx; };
+      el.onmouseleave = () => { if (state.hoveredSlot === idx) state.hoveredSlot = -1; };
+    });
+  }
+
+  /* ================= MOTOR DE RODÍZIO AUTOMÁTICO EM ONDA ================= */
+  function stepRotation(forceAll = false){
+    const targetSlots = SLOTS.filter(sl =>
+      sl.mode === 'rot' && !sl.locked && (forceAll || sl.group === state.waveGroup)
+    );
+
+    targetSlots.forEach(sl => {
+      if (!forceAll && state.hoveredSlot === sl.idx) return; // não troca card sob o mouse
+      sl.active = (sl.active + 1) % sl.pair.length;
+      sl.progress = 0;
+      updateSingleSlot(sl.idx);
+    });
+
+    state.waveGroup = (state.waveGroup + 1) % 2;
+    state.tickCount = 0;
+  }
+
+  setInterval(() => {
+    if (!state.auto || state.drawerOpen) return;
+    state.tickCount++;
+    const pct = Math.min(100, (state.tickCount / state.ticksPerSwap) * 100);
+
+    SLOTS.forEach(sl => {
+      if (sl.mode !== 'rot' || sl.locked) return;
+      if (sl.group === state.waveGroup && state.hoveredSlot !== sl.idx) {
+        sl.progress = pct;
+      } else if (sl.group !== state.waveGroup) {
+        sl.progress = Math.min(50, pct * 0.5);
+      }
+      const bar = $(`#sbar-${sl.idx}`);
+      if (bar) bar.style.width = sl.progress + '%';
+    });
+
+    if (state.tickCount >= state.ticksPerSwap) {
+      stepRotation(false);
+    }
+  }, 250);
+
+  /* ================= INTERAÇÕES (OPCIONAIS) ================= */
+  document.addEventListener('click', e => {
+    const d = e.target.closest('[data-d]');
+    if (d) return openD(d.dataset.d);
+
+    const flip = e.target.closest('[data-flip]');
+    if (flip) {
+      const idx = Number(flip.dataset.flip);
+      const sl = SLOTS[idx];
+      sl.active = (sl.active + 1) % sl.pair.length;
+      sl.progress = 0;
+      updateSingleSlot(idx);
+      return;
+    }
+
+    const lock = e.target.closest('[data-lock]');
+    if (lock) {
+      const idx = Number(lock.dataset.lock);
+      const sl = SLOTS[idx];
+      sl.locked = !sl.locked;
+      sl.progress = 0;
+      updateSingleSlot(idx);
+      return;
+    }
+
+    const rjump = e.target.closest('[data-rjump]');
+    if (rjump) {
+      const id = rjump.dataset.rjump;
+      const sl = SLOTS.find(x => x.pair.includes(id));
+      if (!sl) return;
+      const targetIdx = sl.pair.indexOf(id);
+      if (sl.active !== targetIdx) {
+        sl.active = targetIdx;
+        sl.progress = 0;
+        state.tickCount = 0;
+        updateSingleSlot(sl.idx);
+      } else {
+        openD(id);
+      }
+    }
+  });
+
+  /* ---- Controles de cabeçalho ---- */
+  $('#tvBtn').onclick = () => {
+    state.auto = !state.auto;
+    $('#tvBtn').classList.toggle('on', state.auto);
+    $('#tvLbl').textContent = state.auto ? 'Rodízio automático: Ativo' : 'Rodízio pausado';
+    $('#cycleStatus').textContent = state.auto
+      ? 'Troca suave em pares a cada 7s (passe o mouse em um card para manter)'
+      : 'Rodízio automático pausado • clique em qualquer setor no radar para alternar';
+  };
+
+  $('#stepBtn').onclick = () => stepRotation(true);
+
+  /* ---- Drawer ---- */
+  const tbl = (h, rows) => `<table><thead><tr>${h.map(x => `<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  function openD(id){
+    const s = byId[id]; if (!s) return;
+    state.drawerOpen = true;
+    $('#dTag').textContent = s.name; $('#dTitle').textContent = s.detail.title;
+    $('#dBody').innerHTML = s.detail.secs.map(x => `<div><h4>${x[0]}</h4>${tbl(x[1], x[2])}</div>`).join('');
+    $('#scrim').classList.add('open');
+  }
+  const closeD = () => { state.drawerOpen = false; $('#scrim').classList.remove('open'); };
+  $('#dClose').onclick = closeD;
+  $('#scrim').addEventListener('click', e => { if (e.target.id === 'scrim') closeD(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape') closeD(); });
+
+  /* ---- Tema, tela cheia, relógio ---- */
+  $('#themeBtn').onclick = () => { const r = document.documentElement; r.dataset.theme = r.dataset.theme === 'dark' ? 'light' : 'dark'; };
+  $('#fsBtn').onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {});
+  function tick(){ const n = new Date();
+    $('#clk').textContent = n.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+    $('#dt').textContent = n.toLocaleDateString('pt-BR', {day:'2-digit', month:'short', year:'numeric'}).replace(/\./g, ''); }
+  tick(); setInterval(tick, 15000);
+
+  renderAll();
+</script>
+</body>
+</html>
